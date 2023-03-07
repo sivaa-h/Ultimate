@@ -1,0 +1,85 @@
+pipeline {
+    agent any 
+    environment {
+        CI = 'true'
+    }
+    stages {        
+        stage('checkout code') {
+            steps {
+                echo 'checkout..'
+                git branch: 'main', credentialsId:  'a4bbad0a-b095-470a-9b10-6ecdcebe8974', url: 'https://gitlab.naicotech.com/technology/s002_technology.git'
+            }
+        }
+		
+		stage('Unit Test') {
+            steps {
+                echo 'Unit test..'
+				//dir('/var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/') {
+				//sh'sudo npm install -g jest'
+				//sh 'sudo npm run test'				
+                //}
+            }
+        }
+        stage('Building') {
+            steps {
+                echo 'Building..'
+				dir('/var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/') {
+					sh 'pwd'
+					//sh 'rm -f .git/hooks/*'
+					sh 'sudo yarn install'
+					//sh 'sudo npm install -g @angular/cli'
+				
+					sh 'sudo yarn build'
+					//sh 'sudo ng build'
+					
+                }               
+            }
+        }
+				
+		
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+				
+                	 	sh 'sudo cp -r /var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/dist/competency-framework  /home/naico/deploy/competency/dev/frontend-web/'
+                	    // 'sudo cp -r /var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/node_modules  /home/naico/deploy/competency/dev/frontend-web/dist/'
+					    // 'sudo cp -r /var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/package.json  /home/naico/deploy/competency/dev/frontend-web/dist/'
+					    // 'sudo cp -r /var/lib/jenkins/workspace/competency-framework-dev/T002_ObjectivesKeyResults/OKR001_Competency_FrameWork/1_Project_Artifacts/3_Development/3_Coding_Phase/2_frontend-web/1_Source_Work_Area/SourceBase/SRC/.env.development  /home/naico/deploy/competency/dev/frontend-web/dist/.env'
+						
+						//sh 'sudo pm2 list'
+						//sh 'sudo pm2 restart CompetencyWebPortal'
+						
+                	
+                  
+            }
+       }
+              
+        
+    }
+	post{
+    failure {
+    	emailext( 		
+			subject: "Competency Web (${env.JOB_NAME}) Build - ${currentBuild.currentResult}",
+			body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}",
+			to: "renuka.r@naicoits.com,cc: DevSecOpsManagedServices@naicoits.com",			
+			attachLog: true
+		)
+      }
+    success {
+        emailext(
+            subject:  "Competency Web (${env.JOB_NAME}) Build - ${currentBuild.currentResult}",
+			body: "Competency WebPortal  Build completed successfully, please check and fix the warnings from the logs ",
+			to: "renuka.r@naicoits.com,cc: DevSecOpsManagedServices@naicoits.com",
+            attachLog: true,
+            mimeType: 'text/html'
+        )
+      }    
+    }
+	
+	
+	
+	
+	
+	 
+	
+}
